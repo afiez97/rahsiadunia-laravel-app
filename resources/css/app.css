@@ -1,3 +1,64 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+    --nude-bg: #fdfaf5;
+    --nude-card: #ffffff;
+    --nude-primary: #d9c5b2;
+    --nude-secondary: #e6dbd0;
+    --nude-accent: #c4a484;
+    --nude-text: #4a4238;
+    --nude-border: #eee5dc;
+}
+
+body {
+    background-color: var(--nude-bg);
+    color: var(--nude-text);
+    font-family: 'Outfit', sans-serif;
+}
+
+.bg-nude-primary { background-color: var(--nude-primary); }
+.bg-nude-secondary { background-color: var(--nude-secondary); }
+.text-nude-primary { color: var(--nude-primary); }
+.text-nude-text { color: var(--nude-text); }
+.border-nude-border { border-color: var(--nude-border); }
+
+/* Custom Transitions */
+.transition-nude {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.nude-card {
+    background: var(--nude-card);
+    border: 1px solid var(--nude-border);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    border-radius: 1rem;
+}
+
+.nude-input {
+    background: #fff;
+    border: 1px solid var(--nude-border);
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.nude-input:focus {
+    border-color: var(--nude-accent);
+}
+
+.nude-button {
+    background: var(--nude-accent);
+    color: #fff;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    transition: transform 0.2s, background 0.2s;
+}
+
+.nude-button:hover {
+    transform: translateY(-2px);
+    background: var(--nude-text);
+}
