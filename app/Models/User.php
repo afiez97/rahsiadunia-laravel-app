@@ -39,4 +39,9 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(Account::class);
     }
+
+    public function googleSheets(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(GoogleSheet::class);
+    }
 }

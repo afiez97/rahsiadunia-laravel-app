@@ -18,6 +18,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::resource('notes', \App\Http\Controllers\NoteController::class);
     Route::resource('accounts', \App\Http\Controllers\AccountController::class);
+    Route::resource('sheets', \App\Http\Controllers\GoogleSheetController::class);
 });
 
 require __DIR__.'/auth.php';

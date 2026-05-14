@@ -6,12 +6,23 @@ use App\Models\Note;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+
 class NoteController extends Controller
 {
-    public function index()
+    use AuthorizesRequests;
+    public function index(Request $request)
     {
+        $viewType = $request->query('view', 'list');
         $notes = Auth::user()->notes()->latest()->get();
-        return view('notes.index', compact('notes'));
+
+        if ($viewType === 'grouped') {
+            $notes = $notes->groupBy(function ($note) {
+                return $note->label ?: 'Unlabeled';
+            });
+        }
+
+        return view('notes.index', compact('notes', 'viewType'));
     }
 
     public function create()
@@ -23,6 +34,7 @@ class NoteController extends Controller
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
+            'label' => 'nullable|string|max:255',
             'content' => 'required|string',
         ]);
 
@@ -49,6 +61,7 @@ class NoteController extends Controller
 
         $validated = $request->validate([
             'title' => 'required|string|max:255',
+            'label' => 'nullable|string|max:255',
             'content' => 'required|string',
         ]);
 
