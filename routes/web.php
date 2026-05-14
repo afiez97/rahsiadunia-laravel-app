@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\HutangController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -19,6 +20,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('notes', \App\Http\Controllers\NoteController::class);
     Route::resource('accounts', \App\Http\Controllers\AccountController::class);
     Route::resource('sheets', \App\Http\Controllers\GoogleSheetController::class);
+
+    // Hutang Tracker
+    Route::resource('hutang', HutangController::class);
+    Route::post('hutang/{hutang}/payments',                   [HutangController::class, 'storePayment'])->name('hutang.payment.store');
+    Route::post('hutang/{hutang}/installments/{installment}', [HutangController::class, 'markInstallmentPaid'])->name('hutang.installment.pay');
 });
 
 require __DIR__.'/auth.php';

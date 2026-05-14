@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password'])]
+#[Fillable(['name', 'email', 'password', 'telegram_chat_id', 'default_warning_days', 'warning_time'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -25,8 +25,9 @@ class User extends Authenticatable implements MustVerifyEmail
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
+            'email_verified_at'    => 'datetime',
+            'password'             => 'hashed',
+            'default_warning_days' => 'array',
         ];
     }
 
@@ -43,5 +44,10 @@ class User extends Authenticatable implements MustVerifyEmail
     public function googleSheets(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(GoogleSheet::class);
+    }
+
+    public function debts(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Debt::class);
     }
 }

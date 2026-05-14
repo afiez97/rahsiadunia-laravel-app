@@ -25,6 +25,9 @@
                     <x-nav-link :href="route('sheets.index')" :active="request()->routeIs('sheets.*')">
                         {{ __('Sheets') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('hutang.index')" :active="request()->routeIs('hutang.*')">
+                        {{ __('Hutang') }}
+                    </x-nav-link>
                 </div>
             </div>
 
@@ -69,6 +72,9 @@
             <x-responsive-nav-link :href="route('sheets.index')" :active="request()->routeIs('sheets.*')">
                 {{ __('Sheets') }}
             </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('hutang.index')" :active="request()->routeIs('hutang.*')">
+                {{ __('Hutang') }}
+            </x-responsive-nav-link>
         </div>
 
         <!-- Responsive Settings Options -->
@@ -106,6 +112,10 @@
     <a href="{{ route('accounts.index') }}" class="flex flex-col items-center text-xs {{ request()->routeIs('accounts.*') ? 'text-nude-accent' : 'text-gray-400' }}">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
         <span>Vault</span>
+    </a>
+    <a href="{{ route('hutang.index') }}" class="flex flex-col items-center text-xs {{ request()->routeIs('hutang.*') ? 'text-nude-accent' : 'text-gray-400' }}">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <span>Hutang</span>
     </a>
     <a href="{{ route('sheets.index') }}" class="flex flex-col items-center text-xs {{ request()->routeIs('sheets.*') ? 'text-nude-accent' : 'text-gray-400' }}">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2m3 2h12a2 2 0 002-2V7a2 2 0 00-2-2H4a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
