@@ -63,14 +63,21 @@ class TelegramWebhookController extends Controller
             return;
         }
 
+        // Handle invite deep link: /start invite_TOKEN (boleh tanpa akaun)
+        if (str_starts_with($text, '/start invite_')) {
+            $token = str_replace('/start invite_', '', $text);
+            $this->handleInviteToken($chatId, $message, $token);
+            return;
+        }
+
         if (!$user) {
-            $this->telegram->sendMessage($chatId, "⚠️ Telegram anda belum dipautkan ke akaun Rahsia Dunia.\n\nLog masuk dan masukkan Chat ID `{$chatId}` dalam Tetapan Profil anda.");
+            $this->telegram->sendMessage($chatId, "⚠️ Telegram anda belum dipautkan ke akaun Rahsia Dunia.\n\nLog masuk dan masukkan Chat ID `{$chatId}` dalam Tetapan Profil anda.\n\nJika anda menerima link jemputan hutang, klik link tersebut semula.");
             return;
         }
 
         // Route commands
         match (true) {
-            str_starts_with($text, '/start')   => $this->cmdStart($chatId, $user),
+            str_starts_with($text, '/start')   => $this->cmdStart($chatId, $user, $text),
             str_starts_with($text, '/hutang')  => $this->cmdHutang($chatId, $user),
             str_starts_with($text, '/bayar')   => $this->cmdBayar($chatId, $user, $text),
             str_starts_with($text, '/ansuran') => $this->cmdAnsuran($chatId, $user, $text),
@@ -212,9 +219,66 @@ class TelegramWebhookController extends Controller
     }
 
     // ---------------------------------------------------------------
+    // Handle invite token — contact join bot via deep link
+    // ---------------------------------------------------------------
+    private function handleInviteToken(int $chatId, array $message, string $token): void
+    {
+        $debt = \App\Models\Debt::where('invite_token', $token)->with('user')->first();
+
+        if (!$debt) {
+            $this->telegram->sendMessage($chatId,
+                "⚠️ Link jemputan tidak sah atau sudah tamat tempoh.\n\n" .
+                "Minta pemilik hutang janakan link baru."
+            );
+            return;
+        }
+
+        // Cek jika sudah dipautkan dengan chat_id lain
+        if ($debt->contact_telegram_chat_id && $debt->contact_telegram_chat_id !== (string) $chatId) {
+            $this->telegram->sendMessage($chatId,
+                "⚠️ Link ini sudah digunakan oleh pengguna lain.\n\n" .
+                "Jika ini kesilapan, minta pemilik hutang janakan link baru."
+            );
+            return;
+        }
+
+        // Link contact's chat_id ke hutang
+        $debt->update([
+            'contact_telegram_chat_id' => (string) $chatId,
+            'contact_linked_at'        => now(),
+        ]);
+
+        $ownerName = $debt->user->name;
+        $direction = $debt->direction === 'i_owe'
+            ? "💸 {$ownerName} berhutang kepada anda sebanyak RM" . number_format($debt->total_amount, 2)
+            : "💰 Anda berhutang kepada {$ownerName} sebanyak RM" . number_format($debt->total_amount, 2);
+
+        $contactName = $message['from']['first_name'] ?? 'Pengguna';
+
+        $this->telegram->sendMessage($chatId,
+            "✅ Berjaya! Anda telah dipautkan ke rekod hutang.\n\n" .
+            "*{$debt->contact_name}* (dicatatkan oleh {$ownerName})\n\n" .
+            "{$direction}\n\n" .
+            "Baki semasa: RM" . number_format($debt->balance, 2) . "\n\n" .
+            "Anda akan menerima peringatan bayaran secara automatik melalui bot ini.\n\n" .
+            "Taip /status_{$debt->id} untuk semak baki terkini."
+        );
+
+        // Notify debt owner
+        if ($debt->user->telegram_chat_id) {
+            $this->telegram->sendMessage($debt->user->telegram_chat_id,
+                "✅ *{$debt->contact_name}* telah menerima jemputan bot.\n" .
+                "Mereka kini akan menerima peringatan bayaran."
+            );
+        }
+
+        Log::info("Contact linked: debt#{$debt->id}, contact chat_id={$chatId}");
+    }
+
+    // ---------------------------------------------------------------
     // Commands
     // ---------------------------------------------------------------
-    private function cmdStart(int $chatId, User $user): void
+    private function cmdStart(int $chatId, User $user, string $text = '/start'): void
     {
         $this->telegram->sendMessage($chatId,
             "👋 Salam, {$user->name}!\n\n" .

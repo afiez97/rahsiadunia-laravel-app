@@ -22,6 +22,14 @@
                             <label class="block text-sm font-medium text-gray-600 mb-1">Nama Orang</label>
                             <input type="text" name="contact_name" value="{{ old('contact_name', $debt->contact_name) }}"
                                 class="nude-input w-full" required>
+                            <div class="mt-2">
+                                <label class="block text-sm font-medium text-gray-600 mb-1">
+                                    Nombor Telefon
+                                </label>
+                                <input type="tel" name="contact_phone"
+                                    value="{{ old('contact_phone', $debt->contact_phone) }}"
+                                    class="nude-input w-full" placeholder="cth: 0123456789">
+                            </div>
                             @error('contact_name')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                         </div>
 

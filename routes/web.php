@@ -25,6 +25,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('hutang', HutangController::class);
     Route::post('hutang/{hutang}/payments',                   [HutangController::class, 'storePayment'])->name('hutang.payment.store');
     Route::post('hutang/{hutang}/installments/{installment}', [HutangController::class, 'markInstallmentPaid'])->name('hutang.installment.pay');
+    Route::post('hutang/{hutang}/regenerate-invite',          [HutangController::class, 'regenerateInvite'])->name('hutang.invite.regenerate');
+    Route::post('hutang/{hutang}/unlink-contact',             [HutangController::class, 'unlinkContact'])->name('hutang.contact.unlink');
 });
 
 require __DIR__.'/auth.php';

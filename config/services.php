@@ -30,6 +30,7 @@ return [
 
     'telegram' => [
         'bot_token'      => env('TELEGRAM_BOT_TOKEN'),
+        'bot_name'       => env('TELEGRAM_BOT_NAME'),   // username bot tanpa @, cth: hutangku_bot
         'webhook_secret' => env('TELEGRAM_WEBHOOK_SECRET'),
         'allowed_chat_id'=> env('TELEGRAM_ALLOWED_CHAT_ID'),
     ],

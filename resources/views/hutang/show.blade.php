@@ -90,6 +90,9 @@
             @endif
         </div>
 
+        {{-- Panel Jemputan Contact --}}
+        @include('hutang.partials._contact_invite')
+
         {{-- Installment Table --}}
         @if($debt->is_installment && $debt->installments->isNotEmpty())
             @include('hutang.partials._installment_table')

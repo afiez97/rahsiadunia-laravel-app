@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class HutangController extends Controller
 {
@@ -55,6 +56,7 @@ class HutangController extends Controller
     {
         $validated = $request->validate([
             'contact_name'           => 'required|string|max:255',
+            'contact_phone'          => 'nullable|string|max:20',
             'direction'              => 'required|in:i_owe,they_owe',
             'total_amount'           => 'required|numeric|min:0.01',
             'payment_method'         => 'required|string|max:50',
@@ -73,6 +75,7 @@ class HutangController extends Controller
         $validated['user_id']          = Auth::id();
         $validated['paid_amount']      = 0;
         $validated['status']           = 'pending';
+        $validated['invite_token']     = Str::random(32);
         $validated['warn_on_due_date'] = $request->boolean('warn_on_due_date', true);
         $validated['warn_if_overdue']  = $request->boolean('warn_if_overdue', true);
         $validated['is_installment']   = $request->boolean('is_installment');
@@ -130,6 +133,7 @@ class HutangController extends Controller
 
         $validated = $request->validate([
             'contact_name'     => 'required|string|max:255',
+            'contact_phone'    => 'nullable|string|max:20',
             'direction'        => 'required|in:i_owe,they_owe',
             'total_amount'     => 'required|numeric|min:0.01',
             'payment_method'   => 'required|string|max:50',
@@ -160,6 +164,39 @@ class HutangController extends Controller
         $hutang->delete();
 
         return redirect()->route('hutang.index')->with('success', 'Rekod hutang dipadam.');
+    }
+
+    // ---------------------------------------------------------------
+    // REGENERATE INVITE TOKEN
+    // ---------------------------------------------------------------
+    public function regenerateInvite(Debt $hutang)
+    {
+        $this->authorizeDebt($hutang);
+
+        $hutang->update([
+            'invite_token'               => Str::random(32),
+            'contact_telegram_chat_id'   => null,
+            'contact_linked_at'          => null,
+        ]);
+
+        return redirect()->route('hutang.show', $hutang)
+            ->with('success', 'Link jemputan baru dijana. Link lama sudah tidak sah.');
+    }
+
+    // ---------------------------------------------------------------
+    // UNLINK CONTACT TELEGRAM
+    // ---------------------------------------------------------------
+    public function unlinkContact(Debt $hutang)
+    {
+        $this->authorizeDebt($hutang);
+
+        $hutang->update([
+            'contact_telegram_chat_id' => null,
+            'contact_linked_at'        => null,
+        ]);
+
+        return redirect()->route('hutang.show', $hutang)
+            ->with('success', 'Telegram contact berjaya dinyahpaut.');
     }
 
     // ---------------------------------------------------------------

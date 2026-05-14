@@ -93,8 +93,48 @@ class SendDueWarnings extends Command
             (float) $debt->balance,
         );
 
+        // Hantar ke owner
         $this->telegram->sendInstallmentWarning($chatId, $text, $ins->id);
-
         $this->line("Hantar ke {$user->name} ({$chatId}): Ansuran #{$ins->installment_number}");
+
+        // Hantar ke contact jika ada dan sudah link
+        if ($debt->contact_telegram_chat_id) {
+            $contactText = $this->buildContactWarningText($debt, $ins, $daysLeft, $total);
+            $this->telegram->sendInstallmentWarning($debt->contact_telegram_chat_id, $contactText, $ins->id);
+            $this->line("  → Contact ({$debt->contact_telegram_chat_id}): notified");
+        }
+    }
+
+    private function buildContactWarningText(\App\Models\Debt $debt, DebtInstallment $ins, int $daysLeft, int $total): string
+    {
+        $ownerName = $debt->user->name;
+
+        // Dari perspektif contact — arah hutang diterbalikkan
+        if ($debt->direction === 'they_owe') {
+            // Contact yang berhutang → mereka kena bayar
+            $role = "Anda berhutang kepada {$ownerName}";
+        } else {
+            // Owner yang berhutang → contact yang terima bayaran
+            $role = "{$ownerName} akan membayar hutang kepada anda";
+        }
+
+        if ($daysLeft < 0) {
+            return "🚨 *OVERDUE - BELUM BAYAR*\n"
+                 . "{$role}\n"
+                 . "Ansuran {$ins->installment_number}/{$total}: RM" . number_format($ins->amount, 2) . "\n"
+                 . "Due date sudah lepas!";
+        }
+
+        if ($daysLeft === 0) {
+            return "🔴 *HARI INI DUE DATE!*\n"
+                 . "{$role}\n"
+                 . "Ansuran {$ins->installment_number}/{$total}: RM" . number_format($ins->amount, 2);
+        }
+
+        return "⚠️ *Peringatan Hutang*\n"
+             . "{$role}\n"
+             . "Ansuran {$ins->installment_number}/{$total}: RM" . number_format($ins->amount, 2) . "\n"
+             . "Due date: " . $ins->due_date->format('d M Y') . " ({$daysLeft} hari lagi)\n"
+             . "Baki keseluruhan: RM" . number_format($debt->balance, 2);
     }
 }

@@ -10,7 +10,9 @@ use Carbon\Carbon;
 class Debt extends Model
 {
     protected $fillable = [
-        'user_id', 'contact_name', 'direction', 'total_amount', 'paid_amount',
+        'user_id', 'contact_name', 'contact_phone', 'contact_telegram_chat_id',
+        'invite_token', 'contact_linked_at',
+        'direction', 'total_amount', 'paid_amount',
         'payment_method', 'description', 'status',
         'due_day_of_month', 'warning_days', 'warn_on_due_date', 'warn_if_overdue',
         'is_installment', 'installment_count', 'installment_frequency', 'first_installment_date',
@@ -26,6 +28,7 @@ class Debt extends Model
             'total_amount'           => 'decimal:2',
             'paid_amount'            => 'decimal:2',
             'first_installment_date' => 'date',
+            'contact_linked_at'      => 'datetime',
         ];
     }
 
@@ -57,6 +60,44 @@ class Debt extends Model
     {
         if ($this->total_amount <= 0) return 0;
         return (int) min(100, round(($this->paid_amount / $this->total_amount) * 100));
+    }
+
+    // Telegram deep link untuk jemput contact
+    public function getInviteLinkAttribute(): ?string
+    {
+        if (!$this->invite_token) return null;
+
+        $botName = config('services.telegram.bot_name');
+        if (!$botName) return null;
+
+        return "https://t.me/{$botName}?start=invite_{$this->invite_token}";
+    }
+
+    // Sama ada contact dah join bot atau belum
+    public function getContactLinkedAttribute(): bool
+    {
+        return !empty($this->contact_telegram_chat_id);
+    }
+
+    // WhatsApp share link untuk hantar jemputan
+    public function getWhatsappInviteLinkAttribute(): ?string
+    {
+        if (!$this->contact_phone || !$this->invite_link) return null;
+
+        $phone   = preg_replace('/\D/', '', $this->contact_phone);
+        // Normalize Malaysian number: 01x → 601x
+        if (str_starts_with($phone, '0')) {
+            $phone = '6' . $phone;
+        }
+
+        $message = urlencode(
+            "Salam! Saya menggunakan app Hutang Tracker untuk rekod hutang kita.\n\n" .
+            "Sila klik link ini untuk join bot Telegram supaya anda boleh terima peringatan bayaran:\n" .
+            $this->invite_link . "\n\n" .
+            "Selepas klik, tekan Start dalam Telegram."
+        );
+
+        return "https://wa.me/{$phone}?text={$message}";
     }
 
     // Next due date based on due_day_of_month
